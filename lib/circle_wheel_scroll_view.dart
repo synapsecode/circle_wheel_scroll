@@ -480,6 +480,7 @@ class CircleFixedExtentScrollPhysics extends ScrollPhysics {
   CircleFixedExtentScrollPhysics applyTo(ScrollPhysics? ancestor) {
     return CircleFixedExtentScrollPhysics(
       parent: buildParent(ancestor),
+      disableSpringAction: disableSpringAction,
     );
   }
 
