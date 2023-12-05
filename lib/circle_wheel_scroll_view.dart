@@ -468,13 +468,19 @@ class _FixedExtentScrollableState extends ScrollableState {
 ///
 /// Defers back to the parent beyond the scroll extents.
 class CircleFixedExtentScrollPhysics extends ScrollPhysics {
+  final bool disableSpringAction;
+
   /// Creates a scroll physics that always lands on items.
-  const CircleFixedExtentScrollPhysics({ScrollPhysics? parent})
-      : super(parent: parent);
+  const CircleFixedExtentScrollPhysics({
+    ScrollPhysics? parent,
+    this.disableSpringAction = false,
+  }) : super(parent: parent);
 
   @override
   CircleFixedExtentScrollPhysics applyTo(ScrollPhysics? ancestor) {
-    return CircleFixedExtentScrollPhysics(parent: buildParent(ancestor));
+    return CircleFixedExtentScrollPhysics(
+      parent: buildParent(ancestor),
+    );
   }
 
   @override
@@ -526,8 +532,9 @@ class CircleFixedExtentScrollPhysics extends ScrollPhysics {
     // Scenario 3:
     // If there's no velocity and we're already at where we intend to land,
     // do nothing.
-    if (velocity.abs() < tolerance.velocity &&
-        (settlingPixels - metrics.pixels).abs() < tolerance.distance) {
+    if (velocity.abs() < toleranceFor(metrics).velocity &&
+        (settlingPixels - metrics.pixels).abs() <
+            toleranceFor(metrics).distance) {
       return null;
     }
 
@@ -539,12 +546,12 @@ class CircleFixedExtentScrollPhysics extends ScrollPhysics {
         SpringDescription.withDampingRatio(
           mass: 0.5,
           stiffness: 100.0,
-          ratio: 0.6,
+          ratio: disableSpringAction ? 1 : 0.6,
         ),
         metrics.pixels,
         settlingPixels,
         velocity,
-        tolerance: tolerance,
+        tolerance: toleranceFor(metrics),
       );
     }
 
@@ -554,12 +561,12 @@ class CircleFixedExtentScrollPhysics extends ScrollPhysics {
       SpringDescription.withDampingRatio(
         mass: 0.5,
         stiffness: 100.0,
-        ratio: 0.9,
+        ratio: disableSpringAction ? 1 : 0.9,
       ),
       metrics.pixels,
       settlingPixels,
       velocity,
-      tolerance: tolerance,
+      tolerance: toleranceFor(metrics),
     );
   }
 }
