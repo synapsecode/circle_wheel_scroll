@@ -597,6 +597,7 @@ class CircleListScrollView extends StatefulWidget {
     required List<Widget> children,
     this.axis = Axis.vertical,
     this.radius = 100,
+    this.shouldChangeIndexOnlyOnScrollEnd = false,
   })  : assert(itemExtent > 0),
         assert(
           !renderChildrenOutsideViewport || !clipToSize,
@@ -618,6 +619,7 @@ class CircleListScrollView extends StatefulWidget {
     this.renderChildrenOutsideViewport = false,
     required this.childDelegate,
     this.axis = Axis.vertical,
+    this.shouldChangeIndexOnlyOnScrollEnd = false,
     this.radius = 100,
   })  : assert(itemExtent > 0),
         assert(
@@ -674,6 +676,9 @@ class CircleListScrollView extends StatefulWidget {
   /// Circle radius
   final double radius;
 
+  ///Setting this to true results in [onSelectedItemChanged] being called only when scroll action ends
+  final bool shouldChangeIndexOnlyOnScrollEnd;
+
   @override
   _CircleListScrollViewState createState() => _CircleListScrollViewState();
 }
@@ -709,9 +714,13 @@ class _CircleListScrollViewState extends State<CircleListScrollView> {
   Widget build(BuildContext context) {
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification notification) {
+        final notifTypeMatches = widget.shouldChangeIndexOnlyOnScrollEnd
+            ? (notification is ScrollEndNotification)
+            : (notification is ScrollUpdateNotification);
+
         if (notification.depth == 0 &&
             widget.onSelectedItemChanged != null &&
-            notification is ScrollUpdateNotification &&
+            notifTypeMatches &&
             notification.metrics is FixedExtentMetrics) {
           final FixedExtentMetrics metrics =
               notification.metrics as FixedExtentMetrics;
